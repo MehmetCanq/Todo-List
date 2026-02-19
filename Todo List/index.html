@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo List</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script>
+</head>     
+<body>
+
+    <main class="app-container">
+        <header class="app-header">
+            <h1>Yapılacaklar Listesi</h1>
+            <p>Todo Uygulaması</p>
+        </header>
+
+        <!-- Görev Ekleme Formu -->
+        <section class="task-add-form-section">
+        
+            <h2>Yeni Görev Ekle</h2>
+            <form id="add-task-form" class="task-add-form">
+                <div class="form-row">
+                    <input type="text" id="task-input" placeholder="Yeni bir görev yazın..." required>
+                    <br>
+                    <button type="submit" id="add-task-button" class="add-task-button">Ekle</button>
+                </div>
+                <div class="form-row-details">
+                    <div class="form-group">
+                        <label for="category-input">Kategori:</label>
+                        <input type="text" id="category-input" list="category-list" placeholder="Genel">
+                        <button type="button" id="add-category-button" class="add-category-button">Kategori Ekle</button>
+                        <label for="category-list">Mevcut Kategoriler:</label>
+                         <select id="category-list" class="category-list">
+                            <option value="Genel">Genel</option>
+                            <option value="İş">İş</option>
+                            <option value="Kişisel">Kişisel</option>
+                        </select>
+                         
+                            <div class="dropdown-content">
+                                <ul id="drop-list" class="category-list"></ul>
+                            </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="priority-select">Öncelik:</label>
+                        <select id="priority-select">
+                            <option value="low">Düşük</option>
+                            <option value="medium" selected>Orta</option>
+                            <option value="high">Yüksek</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="due-date-input">Başlangıç Tarihi:</label>
+                        <input type="date" id="due-date-input">
+                        <label for="due-date-input">Bitiş Tarihi:</label>
+                        <input type="date" id="due-date-input-end">
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- Kontrol Paneli  -->
+        <section class="controls-section">
+            <h2>Kontrol Paneli</h2>
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label for="filter-category">Kategoriye Göre Filtrele:</label>
+                    <select id="filter-category">
+                        <option value="all">Tümü</option>
+                    </select>
+                </div>
+                 <div class="control-group">
+                    <label for="filter-status">Duruma Göre Filtrele:</label>
+                    <select id="filter-status">
+                        <option value="all">Tümü</option>
+                        <option value="active">Aktif</option>
+                        <option value="completed">Tamamlanmış</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="sort-by">Sırala:</label>
+                    <select id="sort-by">
+                        <option value="date-desc">Tarihe Göre (Yeni)</option>
+                        <option value="date-asc">Tarihe Göre (Eski)</option>
+                        <option value="name-asc">Ada Göre (A-Z)</option>
+                        <option value="name-desc">Ada Göre (Z-A)</option>
+                    </select>
+                </div>
+                <div class="control-group-search-group">
+                    <label for="search-input">Görev Ara:</label>
+                    <input type="search" id="search-input" placeholder="Başlıkta ara...">
+                </div>
+            </div>
+        </section>
+
+        <!-- Görev Listesi -->
+        <section class="task-list-section" id="task-list-section">
+            <h2>Görevler</h2>
+            <div id="task-count" class="task-count"></div>
+            <ul id="task-list" class="task-list"></ul>
+            <button id="clear-button" class="clear-button">Görevi Temizle</button>
+                <div id="no-tasks-message" class="no-tasks-message" style="display: none;">
+                    
+             </div>
+        </section>
+
+
+    </main>
+
+</body>
+</html>
