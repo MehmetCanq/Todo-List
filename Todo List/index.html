@@ -5,72 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Todo List</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
     <script src="app.js" defer></script>
-</head>     
+</head>
 <body>
-
-    <main class="app-container">
-        <header class="app-header">
-            <h1>Yapılacaklar Listesi</h1>
-            <p>Todo Uygulaması</p>
-        </header>
-
-        <!-- Görev Ekleme Formu -->
-        <section class="task-add-form-section">
+    <div class="app-layout">
         
-            <h2>Yeni Görev Ekle</h2>
-            <form id="add-task-form" class="task-add-form">
-                <div class="form-row">
-                    <input type="text" id="task-input" placeholder="Yeni bir görev yazın..." required>
-                    <br>
-                    <button type="submit" id="add-task-button" class="add-task-button">Ekle</button>
-                </div>
-                <div class="form-row-details">
-                    <div class="form-group">
-                        <label for="category-input">Kategori:</label>
-                        <input type="text" id="category-input" list="category-list" placeholder="Genel">
-                        <button type="button" id="add-category-button" class="add-category-button">Kategori Ekle</button>
-                        <label for="category-list">Mevcut Kategoriler:</label>
-                         <select id="category-list" class="category-list">
-                            <option value="Genel">Genel</option>
-                            <option value="İş">İş</option>
-                            <option value="Kişisel">Kişisel</option>
-                        </select>
-                         
-                            <div class="dropdown-content">
-                                <ul id="drop-list" class="category-list"></ul>
-                            </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="priority-select">Öncelik:</label>
-                        <select id="priority-select">
-                            <option value="low">Düşük</option>
-                            <option value="medium" selected>Orta</option>
-                            <option value="high">Yüksek</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="due-date-input">Başlangıç Tarihi:</label>
-                        <input type="date" id="due-date-input">
-                        <label for="due-date-input">Bitiş Tarihi:</label>
-                        <input type="date" id="due-date-input-end">
-                    </div>
-                </div>
-            </form>
-        </section>
-
-        <!-- Kontrol Paneli  -->
-        <section class="controls-section">
-            <h2>Kontrol Paneli</h2>
-            <div class="controls-grid">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i data-feather="check-square"></i>
+                <h2>TodoPro</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <h3>Filtrele ve Sırala</h3>
                 <div class="control-group">
-                    <label for="filter-category">Kategoriye Göre Filtrele:</label>
-                    <select id="filter-category">
-                        <option value="all">Tümü</option>
-                    </select>
+                    <label for="search-input"><i data-feather="search"></i> Görev Ara</label>
+                    <input type="search" id="search-input" placeholder="Görev adı...">
                 </div>
-                 <div class="control-group">
-                    <label for="filter-status">Duruma Göre Filtrele:</label>
+                <div class="control-group">
+                    <label for="filter-status"><i data-feather="bar-chart-2"></i> Duruma Göre</label>
                     <select id="filter-status">
                         <option value="all">Tümü</option>
                         <option value="active">Aktif</option>
@@ -78,7 +34,16 @@
                     </select>
                 </div>
                 <div class="control-group">
-                    <label for="sort-by">Sırala:</label>
+                    <label for="filter-date"><i data-feather="calendar"></i> Tarihe Göre</label>
+                    <select id="filter-date">
+                        <option value="all">Tümü</option>
+                        <option value="overdue">Süresi Geçmiş</option>
+                        <option value="today">Bugün</option>
+                        <option value="upcoming">Gelecek</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="sort-by"><i data-feather="arrow-up-down"></i> Sırala</label>
                     <select id="sort-by">
                         <option value="date-desc">Tarihe Göre (Yeni)</option>
                         <option value="date-asc">Tarihe Göre (Eski)</option>
@@ -86,26 +51,137 @@
                         <option value="name-desc">Ada Göre (Z-A)</option>
                     </select>
                 </div>
-                <div class="control-group-search-group">
-                    <label for="search-input">Görev Ara:</label>
-                    <input type="search" id="search-input" placeholder="Başlıkta ara...">
+                
+                <h3>Kategoriler</h3>
+                <div class="control-group">
+                    <label for="filter-category"><i data-feather="tag"></i> Kategoriye Göre</label>
+                    <select id="filter-category">
+                        <option value="all">Tüm Kategoriler</option>
+                    </select>
                 </div>
+                <div class="control-group category-adder">
+                    <input type="text" id="category-input" placeholder="Yeni kategori ekle...">
+                    <button type="button" id="add-category-button" title="Kategori Ekle"><i data-feather="plus"></i></button>
+                </div>
+                <ul id="category-items" class="category-items"></ul>
+                <select id="category-list" style="display: none;"></select>
+            </nav>
+            <div class="sidebar-footer">
+                <p id="task-count">Toplam Görev: 0</p>
+                <p id="completed-count">Tamamlanan: 0</p>
             </div>
-        </section>
+        </aside>
 
-        <!-- Görev Listesi -->
-        <section class="task-list-section" id="task-list-section">
-            <h2>Görevler</h2>
-            <div id="task-count" class="task-count"></div>
-            <ul id="task-list" class="task-list"></ul>
-            <button id="clear-button" class="clear-button">Görevi Temizle</button>
-                <div id="no-tasks-message" class="no-tasks-message" style="display: none;">
-                    
-             </div>
-        </section>
+        
+        <main class="main-content">
+            <header class="main-header">
+                <h1>Görev Yöneticisi</h1>
+                <div class="header-actions">
+                    <button id="clear-button" class="button-danger"><i data-feather="trash-2"></i> Tümünü Temizle</button>
+                </div>
+            </header>
 
+            
+            <section class="add-task-wrapper">
+                <form id="add-task-form">
+                    <div class="form-main">
+                        <i data-feather="plus"></i>
+                        <input type="text" id="task-input" placeholder="Yeni bir görev ekle ve Enter'a bas..." required>
+                    </div>
+                    <div class="form-details">
+                        <div class="form-group">
+                            <label for="description-input"><i data-feather="align-left"></i> Açıklama</label>
+                            <textarea id="description-input" placeholder="Görev hakkında kısa bir açıklama..."></textarea>
+                        </div>
+                         <div class="form-group">
+                            <label for="priority-select"><i data-feather="flag"></i> Öncelik</label>
+                            <select id="priority-select">
+                                <option value="low">Düşük</option>
+                                <option value="medium" selected>Orta</option>
+                                <option value="high">Yüksek</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="due-date-input"><i data-feather="log-in"></i> Başlangıç</label>
+                            <input type="date" id="due-date-input" title="Başlangıç Tarihi">
+                        </div>
+                        <div class="form-group">
+                            <label for="due-date-input-end"><i data-feather="log-out"></i> Bitiş</label>
+                            <input type="date" id="due-date-input-end" title="Bitiş Tarihi">
+                        </div>
+                        <button type="submit" id="add-task-button" class="button-primary">Görevi Kaydet</button>
+                    </div>
+                </form>
+            </section>
 
-    </main>
+            
+            <div class="task-lists-container">
+                <section class="task-list-section">
+                    <h2>Aktif Görevler</h2>
+                    <ul id="task-list"></ul>
+                    <div id="no-tasks-message" style="display: none;">
+                        <i data-feather="moon"></i>
+                        <p>Henüz hiç görev eklenmemiş. Hadi başlayalım!</p>
+                    </div>
+                </section>
 
+                <section class="task-list-section" id="completed-section">
+                    <h2>Tamamlanan Görevler</h2>
+                    <ul id="completed-list"></ul>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    
+    <div id="modal-overlay" class="modal-overlay" style="display:none;">
+        
+        <div id="edit-modal" class="modal" role="dialog" aria-modal="true" style="display:none;">
+            <form id="edit-form" class="modal-form">
+                <h3 id="edit-modal-title">Görevi Düzenle</h3>
+                <div class="modal-body">
+                    <label>Başlık<input type="text" id="edit-title"></label>
+                    <label>Açıklama<textarea id="edit-description" placeholder="Görev hakkında kısa bir açıklama..."></textarea></label>
+                    <label>Kategori<input type="text" id="edit-category" list="category-list-datalist"></label>
+                    <datalist id="category-list-datalist"></datalist> 
+                    <div class="modal-row">
+                        <label>Öncelik
+                            <select id="edit-priority">
+                                <option value="low">Düşük</option>
+                                <option value="medium">Orta</option>
+                                <option value="high">Yüksek</option>
+                            </select>
+                        </label>
+                        <label>Başlangıç Tarihi<input type="date" id="edit-start"></label>
+                        <label>Bitiş Tarihi<input type="date" id="edit-end"></label>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="edit-cancel" class="button-secondary">İptal</button>
+                    <button type="submit" id="edit-save" class="button-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+        
+        <div id="confirm-modal" class="modal" role="dialog" aria-modal="true" style="display:none;">
+            <h3 id="confirm-title">Emin misiniz?</h3>
+            <p id="confirm-message">Bu işlem geri alınamaz.</p>
+            <div class="modal-actions">
+                <button id="confirm-no" class="button-secondary">Hayır</button>
+                <button id="confirm-yes" class="button-danger">Evet, Sil</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <div id="toast" style="display:none;"></div>
+    
+    
+    <ul id="drop-list" style="display: none;"></ul>
+
+    <script>
+        
+        feather.replace();
+    </script>
 </body>
 </html>
