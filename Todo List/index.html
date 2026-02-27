@@ -17,7 +17,7 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <i data-feather="check-square"></i>
-                <h2>TodoPro</h2>
+                <h2>TodoList</h2>
             </div>
             <nav class="sidebar-nav">
                 <h3>Filtrele ve Sırala</h3>
@@ -77,7 +77,7 @@
             <header class="main-header">
                 <h1>Görev Yöneticisi</h1>
                 <div class="header-actions">
-                    <button id="clear-button" class="button-danger"><i data-feather="trash-2"></i> Tümünü Temizle</button>
+                    <button id="clear-button" class="button-danger"><i data-feather="trash-2"></i> Tüm Görevleri Temizle</button>
                 </div>
             </header>
 
@@ -86,6 +86,7 @@
                 <form id="add-task-form">
                     <div class="form-main">
                         <i data-feather="plus"></i>
+                        <span id="selected-category-badge" class="selected-category-badge" title="Seçili Kategori"></span>
                         <input type="text" id="task-input" placeholder="Yeni bir görev ekle ve Enter'a bas..." required>
                     </div>
                     <div class="form-details">

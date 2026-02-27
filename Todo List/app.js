@@ -191,9 +191,10 @@ document.addEventListener('DOMContentLoaded', () => {
             opt.textContent = value;
             categorySelect.appendChild(opt);
         }
-        
         const renderLi = (ul) => {
             if (!ul) return;
+            const existsLi = Array.from(ul.children).some(ch => ch.dataset && ch.dataset.value === value);
+            if (existsLi) return;
             const li = document.createElement('li');
             li.dataset.value = value;
             li.className = 'category-item';
@@ -204,7 +205,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderLi(dropList);
         syncCategoriesToFilter();
     }
-
     function createTaskElement(data, save = true) {
         const li = document.createElement('li');
         li.className = 'task-item';
@@ -225,6 +225,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const priorityMap = { low: 'Düşük', medium: 'Orta', high: 'Yüksek' };
     const priorityText = data.priority ? (priorityMap[data.priority] || data.priority) : '';
     const timeText = (data.start || data.end) ? `${data.start || ''}${data.start && data.end ? ' → ' : ''}${data.end || ''}` : '';
+    const actionsHtml = data.completed
+        ? `<div class="task-actions"><button class="delete-btn" title="Sil">Sil</button></div>`
+        : `<div class="task-actions"><button class="edit-btn" title="Düzenle">Düzenle</button><button class="delete-btn" title="Sil">Sil</button></div>`;
     li.innerHTML = `
             <div class="task-left">
                 <input type="checkbox" class="task-checkbox" ${data.completed ? 'checked' : ''}>
@@ -240,10 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${timeText ? `<small class="task-time">${escapeHtml(timeText)}</small>` : ''}
                 </div>
             </div>
-            <div class="task-actions">
-                <button class="edit-btn" title="Düzenle">Düzenle</button>
-                <button class="delete-btn" title="Sil">Sil</button>
-            </div>
+            ${actionsHtml}
         `;
 
         taskList.appendChild(li);
@@ -347,21 +347,32 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/'/g, '&#39;');
     }
 
-  
+    
     if (addCategoryButton) {
         addCategoryButton.addEventListener('click', () => {
             const val = categoryInput.value.trim();
             if (val) {
                 addCategoryValue(val);
                 categoryInput.value = '';
-                saveTasksToLocalStorage();
                 saveCategoriesToLocalStorage();
                 updateCategoriesCount();
-                
-                
             }
         });
     }
+
+    const selectedCategoryBadge = document.getElementById('selected-category-badge');
+    function updateSelectedCategoryBadge() {
+        if (!selectedCategoryBadge) return;
+        const val = (categorySelect && categorySelect.value) || (categoryInput && categoryInput.value) || '';
+        selectedCategoryBadge.textContent = val ? val : '';
+        selectedCategoryBadge.title = val ? `Seçili kategori: ${val}` : 'Kategori seçili değil';
+        selectedCategoryBadge.style.display = selectedCategoryBadge.textContent ? 'inline-flex' : 'none';
+    }
+    updateSelectedCategoryBadge();
+    if (categorySelect) categorySelect.addEventListener('change', updateSelectedCategoryBadge);
+    if (categoryInput) categoryInput.addEventListener('input', updateSelectedCategoryBadge);
+
+
 
     
 
@@ -384,6 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
             createTaskElement({ text, category: selectedCategory, description, priority, start, end });
             if (taskInput) taskInput.value = '';
             if (descriptionInput) descriptionInput.value = '';
+            updateSelectedCategoryBadge();
         });
     }
 
@@ -391,15 +403,26 @@ document.addEventListener('DOMContentLoaded', () => {
     taskList.addEventListener('click', async (e) => {
         const li = e.target.closest('li');
         if (!li) return;
-        if (e.target.classList.contains('task-checkbox')) {
-            
-            if (e.target.checked) {
-                li.classList.add('completed');
-                if (completedList) completedList.appendChild(li);
-            } else {
-                li.classList.remove('completed');
-                taskList.appendChild(li);
-            }
+            if (e.target.classList.contains('task-checkbox')) {
+                if (e.target.checked) {
+                    li.classList.add('completed');
+                    if (completedList) completedList.appendChild(li);
+                    const editBtn = li.querySelector('.edit-btn');
+                    if (editBtn) editBtn.remove();
+                } else {
+                    li.classList.remove('completed');
+                    taskList.appendChild(li);
+                    const actions = li.querySelector('.task-actions');
+                    if (actions) {
+                        if (!actions.querySelector('.edit-btn')) {
+                            const edit = document.createElement('button');
+                            edit.className = 'edit-btn';
+                            edit.title = 'Düzenle';
+                            edit.textContent = 'Düzenle';
+                            actions.insertBefore(edit, actions.firstChild);
+                        }
+                    }
+                }
             saveTasksToLocalStorage();
             updateTaskCount();
             return;
@@ -426,6 +449,65 @@ document.addEventListener('DOMContentLoaded', () => {
     
         openEditModal(li);
     });
+
+    if (completedList) {
+        completedList.addEventListener('click', async (e) => {
+            const li = e.target.closest('li');
+            if (!li) return;
+            if (e.target.classList.contains('task-checkbox')) {
+                if (!e.target.checked) {
+                    li.classList.remove('completed');
+                    if (taskList) taskList.appendChild(li);
+                    const actions = li.querySelector('.task-actions');
+                    if (actions) {
+                        if (!actions.querySelector('.edit-btn')) {
+                            const edit = document.createElement('button');
+                            edit.className = 'edit-btn';
+                            edit.title = 'Düzenle';
+                            edit.textContent = 'Düzenle';
+                            actions.insertBefore(edit, actions.firstChild);
+                        }
+                    }
+                    saveTasksToLocalStorage();
+                    updateTaskCount();
+                }
+                return;
+            }
+            if (e.target.classList.contains('edit-btn')) {
+                showToast('Tamamlanmış görevler düzenlenemez.');
+                return;
+            }
+            if (e.target.classList.contains('delete-btn')) {
+                const ok = await showConfirm('Bu görevi silmek istediğinize emin misiniz?');
+                if (ok) {
+                    li.remove();
+                    saveTasksToLocalStorage();
+                    updateTaskCount();
+                    showToast('Görev silindi.');
+                }
+                return;
+            }
+        });
+
+        completedList.addEventListener('dblclick', (e) => {
+            const li = e.target.closest('li');
+            if (!li) return;
+            showToast('Tamamlanmış görevler düzenlenemez.');
+        });
+
+        completedList.addEventListener('contextmenu', async (e) => {
+            const li = e.target.closest('li');
+            if (!li) return;
+            e.preventDefault();
+            const ok = await showConfirm('Bu görevi silmek istediğinize emin misiniz?');
+            if (ok) {
+                li.remove();
+                saveTasksToLocalStorage();
+                updateTaskCount();
+                showToast('Görev silindi.');
+            }
+        });
+    }
 
     taskList.addEventListener('contextmenu', async (e) => {
         const li = e.target.closest('li');
@@ -539,8 +621,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dropList) {
         dropList.addEventListener('click', (e) => {
             if (e.target.tagName === 'LI') {
-                filterCategory.value = e.target.textContent;
-                filterCategory.dispatchEvent(new Event('change'));
+                const val = e.target.dataset.value || e.target.textContent;
+                if (filterCategory) {
+                    filterCategory.value = val;
+                    filterCategory.dispatchEvent(new Event('change'));
+                }
+                if (categoryInput) categoryInput.value = val;
+                if (categorySelect) {
+                    const opt = Array.from(categorySelect.options).find(o => o.value === val);
+                    if (opt) categorySelect.value = val;
+                }
+                if (categoryItems) Array.from(categoryItems.children).forEach(li => li.classList.toggle('selected-category', li.dataset.value === val));
+                if (typeof updateSelectedCategoryBadge === 'function') updateSelectedCategoryBadge();
             }
         });
     }
@@ -550,10 +642,25 @@ document.addEventListener('DOMContentLoaded', () => {
         categoryItems.addEventListener('click', async (e) => {
             const li = e.target.closest('li');
             if (!li) return;
+
+            if (e.target.classList.contains('cat-label')) {
+                const val = li.dataset.value || '';
+                if (categoryInput) categoryInput.value = val;
+                if (categorySelect) {
+                    const opt = Array.from(categorySelect.options).find(o => o.value === val);
+                    if (opt) categorySelect.value = val;
+                }
+                Array.from(categoryItems.children).forEach(ch => ch.classList.toggle('selected-category', ch === li));
+                if (filterCategory) {
+                    filterCategory.value = val;
+                    filterCategory.dispatchEvent(new Event('change'));
+                }
+                if (typeof updateSelectedCategoryBadge === 'function') updateSelectedCategoryBadge();
+            } 
             
             if (e.target.classList.contains('cat-delete')) {
                 const value = li.dataset.value;
-                const ok = await showConfirm(`"${value}" kategorisini silmek istediğinize emin misiniz? Bu işlem, görevlerdeki kategori bilgisini kaldıracaktır.`);
+                const ok = await showConfirm(`"${value}" kategorisini silmek istediğinize emin misiniz?`);
                 if (!ok) return;
                 
                 li.remove();
@@ -570,18 +677,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 }));
                 saveCategoriesToLocalStorage();
                 saveTasksToLocalStorage();
-                showToast('Kategori silindi ve görevlerden kaldırıldı.');
+                showToast('Kategori silindi.');
             } else {
-                
-                filterCategory.value = li.dataset.value || '';
-                filterCategory.dispatchEvent(new Event('change'));
+                const val = li.dataset.value || '';
+                if (categoryInput) categoryInput.value = val;
+                if (categorySelect) {
+                    const opt = Array.from(categorySelect.options).find(o => o.value === val);
+                    if (opt) categorySelect.value = val;
+                }
+                Array.from(categoryItems.children).forEach(ch => ch.classList.toggle('selected-category', ch === li));
+                if (filterCategory) {
+                    filterCategory.value = val;
+                    filterCategory.dispatchEvent(new Event('change'));
+                }
+                if (typeof updateSelectedCategoryBadge === 'function') updateSelectedCategoryBadge();
             }
         });
-    }
-
-    
-    
-   
+    }    
     updateTaskCount();
     loadCategoriesFromLocalStorage();
     syncCategoriesToFilter();
